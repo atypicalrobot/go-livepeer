@@ -160,11 +160,24 @@ func genTranscoderReq(b Broadcaster, jid int64) (*TranscoderRequest, error) {
 	return &TranscoderRequest{JobId: jid, Sig: sig}, nil
 }
 
+func blockInRange(orch Orchestrator, job *lpTypes.Job) bool {
+	blk := orch.CurrentBlock()
+	return !(blk.Cmp(job.CreationBlock) == -1 || blk.Cmp(job.EndBlock) == 1)
+}
+
 func verifyMsgSig(addr ethcommon.Address, msg string, sig []byte) bool {
 	return eth.VerifySig(addr, crypto.Keccak256([]byte(msg)), sig)
 }
 
 func verifyTranscoderReq(orch Orchestrator, req *TranscoderRequest, job *lpTypes.Job) bool {
+	if orch.Address() != job.TranscoderAddress {
+		glog.Error("Transcoder was not assigned")
+		return false
+	}
+	if !blockInRange(orch, job) {
+		glog.Error("Job out of range")
+		return false
+	}
 	if !verifyMsgSig(job.BroadcasterAddress, fmt.Sprintf("%v", job.JobId), req.Sig) {
 		glog.Error("Transcoder req sig check failed")
 		return false
