@@ -112,7 +112,7 @@ type LivepeerEthClient interface {
 	VerificationCodeHash() (string, error)
 	Paused() (bool, error)
 
-	WatchForJob(string) (*contracts.JobsManagerNewJob, error)
+	WatchForJob(string) (*lpTypes.Job, error)
 
 	// Helpers
 	ContractAddresses() map[string]ethcommon.Address
@@ -918,7 +918,7 @@ func (c *client) ReplaceTransaction(tx *types.Transaction, method string, gasPri
 	return newSignedTx, err
 }
 
-func (c *client) WatchForJob(streamId string) (*contracts.JobsManagerNewJob, error) {
+func (c *client) WatchForJob(streamId string) (*lpTypes.Job, error) {
 	ctx, _ := context.WithTimeout(context.Background(), c.txTimeout)
 	for {
 		sink := make(chan *contracts.JobsManagerNewJob)
@@ -931,12 +931,19 @@ func (c *client) WatchForJob(streamId string) (*contracts.JobsManagerNewJob, err
 		case newJob := <-sink:
 			sub.Unsubscribe()
 			if newJob.StreamId == streamId {
-				return newJob, nil
+				// might be faster to reconstruct the job locally?
+				j, err := c.GetJob(newJob.JobId)
+				if err != nil {
+					glog.Error("Unable to fetch job after watching: ", err)
+					return nil, err
+				}
+				return j, nil
 			} // mismatched streamid; maybe we had concurrent listeners so retry
 		case errChan := <-sub.Err():
 			sub.Unsubscribe()
 			glog.Errorf("Error subscribing to new job %v; retrying", errChan)
 		case <-ctx.Done():
+			sub.Unsubscribe()
 			glog.Errorf("Job watcher timeout exceeded; stopping")
 			return nil, fmt.Errorf("JobWatchTimeout")
 		}

@@ -154,19 +154,14 @@ func (n *LivepeerNode) CreateTranscodeJob(strmID StreamID, profiles []ffmpeg.Vid
 		return nil, err
 	}
 
-	newJob, err := n.Eth.WatchForJob(strmID.String())
+	job, err := n.Eth.WatchForJob(strmID.String())
 	if err != nil {
 		glog.Error("Unable to monitor for job ", err)
 		return nil, err
 	}
-	glog.V(common.DEBUG).Info("Got a new job from the blockchain: ", newJob.JobId)
+	glog.V(common.DEBUG).Info("Got a new job from the blockchain: ", job.JobId)
 
-	job, err := n.Eth.GetJob(newJob.JobId)
-	if err != nil {
-		glog.Error("Could not get job after creation: ", err)
-		return nil, err
-	}
-	glog.Infof("Created broadcast job. Id: %v Price: %v. Type: %v", newJob.JobId, price, ethcommon.ToHex(transOpts)[2:])
+	glog.Infof("Created broadcast job. Id: %v Price: %v. Type: %v", job.JobId, price, ethcommon.ToHex(transOpts)[2:])
 
 	return job, nil
 }

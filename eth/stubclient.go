@@ -7,7 +7,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/livepeer/go-livepeer/eth/contracts"
 	lpTypes "github.com/livepeer/go-livepeer/eth/types"
 )
 
@@ -167,3 +166,4 @@ func (c *StubClient) LatestBlockNum() (*big.Int, error)                        {
 func (c *StubClient) GetGasInfo() (uint64, *big.Int)                           { return 0, nil }
 func (c *StubClient) SetGasInfo(uint64, *big.Int) error                        { return nil }
 func (c *StubClient) WatchForJob(string) (*contracts.JobsManagerNewJob, error) { return nil, nil }
+func (c *StubClient) WatchForJob(string) (*lpTypes.Job, error) { return nil, nil }
