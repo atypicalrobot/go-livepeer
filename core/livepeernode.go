@@ -199,7 +199,7 @@ func (n *LivepeerNode) transcodeSegmentLoop(job *ethTypes.Job, segChan SegmentCh
 		StrmID:              job.StreamId,
 		Profiles:            job.Profiles,
 		JobID:               job.JobId,
-		PerformOnchainClaim: true,
+		PerformOnchainClaim: cm != nil,
 	}
 	go func() {
 		for {

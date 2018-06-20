@@ -529,7 +529,7 @@ func setupTranscoder(ctx context.Context, n *core.LivepeerNode, em eth.EventMoni
 
 	// Create job service to listen for new jobs and transcode if assigned to the job
 	js := eventservices.NewJobService(em, n)
-	n.EthServices["JobService"] = js // XXX check what's needed for the new protocol
+	n.EthServices["JobService"] = js
 
 	// Start services
 	err = n.StartEthServices()
